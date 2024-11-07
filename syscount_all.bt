@@ -2,18 +2,18 @@
 
 BEGIN
 {
-	printf("Counting all syscalls... Logs every 10 seconds.\n");
+        printf("Counting all syscalls... Logs every 10 seconds.\n");
 }
 
 interval:s:10
 {
-	time("%Y-%m-%d %H:%M:%S\n");  // Logs timestamp
-	printf("\n--- 10-second interval ---\n");
-	print(@syscall);
-	clear(@syscall);
+        time("%Y-%m-%d %H:%M:%S\n");  // Logs timestamp
+        printf("\n--- 10-second interval ---\n");
+        print(@syscall);
+        clear(@syscall);
 }
 
 tracepoint:raw_syscalls:sys_enter
 {
-	@syscall[args->id] = count();
+        @syscall[args->id] = count();
 }
