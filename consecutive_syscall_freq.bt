@@ -1,0 +1,36 @@
+#!/usr/bin/env bpftrace
+
+BEGIN
+{
+    printf("Recording syscalls in sequential frequency format...\n");
+}
+
+tracepoint:raw_syscalls:sys_enter
+{
+    // Track the last syscall ID and repetition count per thread
+    if (@last_syscall[tid] == args->id) {
+        // If the syscall ID repeats, increment the repetition count
+        @repetition_count[tid] += 1;
+    } else {
+        // If it’s a new syscall, print the previous syscall ID and count
+        if (@last_syscall[tid] != 0) {
+            printf("Syscall ID %d repeated %d times\n", @last_syscall[tid], @repetition_count[tid]);
+        }
+        // Update the last syscall ID to the current syscall and reset repetition count
+        @last_syscall[tid] = args->id;
+        @repetition_count[tid] = 1;
+    }
+}
+
+END
+{
+    printf("\nEnding session and printing:\n");
+
+    // Print the last tracked syscall ID and repetition count for each thread at the end
+    // This avoids the use of unsupported foreach syntax
+    // @last_syscall;
+    // @repetition_count;
+
+    clear(@last_syscall);
+    clear(@repetition_count);
+}

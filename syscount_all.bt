@@ -1,0 +1,19 @@
+#!/usr/bin/env bpftrace
+
+BEGIN
+{
+	printf("Counting all syscalls... Logs every 10 seconds.\n");
+}
+
+interval:s:10
+{
+	time("%Y-%m-%d %H:%M:%S\n");  // Logs timestamp
+	printf("\n--- 10-second interval ---\n");
+	print(@syscall);
+	clear(@syscall);
+}
+
+tracepoint:raw_syscalls:sys_enter
+{
+	@syscall[args->id] = count();
+}
